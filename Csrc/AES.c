@@ -7,8 +7,8 @@
     			   with key size 16 bytes
  ************************************************************************/
 #define BLOCKSIZE 16
-#define N 1
 #define ROUND 10
+#define N 1
 
 
 #include<stdio.h>
@@ -67,6 +67,43 @@ unsigned char S_box[256] = {
 	0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16};
 
 
+/*
+ * define the inverse of the above S box
+ */
+unsigned char S_box_inv[256] = {
+	0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5, 0x38,
+	0xBF, 0x40, 0xA3, 0x9E, 0x81, 0xF3, 0xD7, 0xFB,
+	0x7C, 0xE3, 0x39, 0x82, 0x9B, 0x2F, 0xFF, 0x87,
+	0x34, 0x8E, 0x43, 0x44, 0xC4, 0xDE, 0xE9, 0xCB,
+	0x54, 0x7B, 0x94, 0x32, 0xA6, 0xC2, 0x23, 0x3D,
+	0xEE, 0x4C, 0x95, 0x0B, 0x42, 0xFA, 0xC3, 0x4E,
+	0x08, 0x2E, 0xA1, 0x66, 0x28, 0xD9, 0x24, 0xB2,
+	0x76, 0x5B, 0xA2, 0x49, 0x6D, 0x8B, 0xD1, 0x25,
+	0x72, 0xF8, 0xF6, 0x64, 0x86, 0x68, 0x98, 0x16,
+	0xD4, 0xA4, 0x5C, 0xCC, 0x5D, 0x65, 0xB6, 0x92,
+	0x6C, 0x70, 0x48, 0x50, 0xFD, 0xED, 0xB9, 0xDA,
+	0x5E, 0x15, 0x46, 0x57, 0xA7, 0x8D, 0x9D, 0x84,
+	0x90, 0xD8, 0xAB, 0x00, 0x8C, 0xBC, 0xD3, 0x0A,
+	0xF7, 0xE4, 0x58, 0x05, 0xB8, 0xB3, 0x45, 0x06,
+	0xD0, 0x2C, 0x1E, 0x8F, 0xCA, 0x3F, 0x0F, 0x02,
+	0xC1, 0xAF, 0xBD, 0x03, 0x01, 0x13, 0x8A, 0x6B,
+	0x3A, 0x91, 0x11, 0x41, 0x4F, 0x67, 0xDC, 0xEA,
+	0x97, 0xF2, 0xCF, 0xCE, 0xF0, 0xB4, 0xE6, 0x73,
+	0x96, 0xAC, 0x74, 0x22, 0xE7, 0xAD, 0x35, 0x85,
+	0xE2, 0xF9, 0x37, 0xE8, 0x1C, 0x75, 0xDF, 0x6E,
+	0x47, 0xF1, 0x1A, 0x71, 0x1D, 0x29, 0xC5, 0x89,
+	0x6F, 0xB7, 0x62, 0x0E, 0xAA, 0x18, 0xBE, 0x1B,
+	0xFC, 0x56, 0x3E, 0x4B, 0xC6, 0xD2, 0x79, 0x20,
+	0x9A, 0xDB, 0xC0, 0xFE, 0x78, 0xCD, 0x5A, 0xF4,
+	0x1F, 0xDD, 0xA8, 0x33, 0x88, 0x07, 0xC7, 0x31,
+	0xB1, 0x12, 0x10, 0x59, 0x27, 0x80, 0xEC, 0x5F,
+	0x60, 0x51, 0x7F, 0xA9, 0x19, 0xB5, 0x4A, 0x0D,
+	0x2D, 0xE5, 0x7A, 0x9F, 0x93, 0xC9, 0x9C, 0xEF,
+	0xA0, 0xE0, 0x3B, 0x4D, 0xAE, 0x2A, 0xF5, 0xB0,
+	0xC8, 0xEB, 0xBB, 0x3C, 0x83, 0x53, 0x99, 0x61,
+	0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26,
+	0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D};
+	
 
 /* 
  * to obtain the transpose of a 4-by-4 matrix
@@ -195,13 +232,6 @@ void KeyExpansion(unsigned char* key){
 
 
 /*
- *
- */
-void KeyExpansionReverse(unsigned char* key){}
-
-
-
-/*
  * opeartion addRoundKey, used to
  * Xor the state with the round key
  *
@@ -223,6 +253,13 @@ void AddRoundKey(unsigned char* roundKey){
 void SubBytes(){
 	for(int i = 0; i < BLOCKSIZE; i++)
 		stateBuffer[i] = S_box[stateBuffer[i]];
+}
+/*
+ * using the inverse of S box
+ */
+void SubBytesInv(){
+	for(int i = 0; i < BLOCKSIZE; i++)
+		stateBuffer[i] = S_box_inv[stateBuffer[i]];
 }
 
 
@@ -251,6 +288,29 @@ void ShiftRows(){
 	stateBuffer[13] = tmp[12];
 	stateBuffer[14] = tmp[13];
 	stateBuffer[15] = tmp[14];
+}
+/*
+ * inverse operation of shift rows
+ */
+void ShiftRowsInv(){
+	unsigned char tmp[BLOCKSIZE];
+	for(int i = 0; i < BLOCKSIZE; i++)
+		tmp[i] = stateBuffer[i];
+
+	stateBuffer[4] = tmp[7];
+	stateBuffer[5] = tmp[4];
+	stateBuffer[6] = tmp[5];
+	stateBuffer[7] = tmp[6];
+
+	stateBuffer[8] = tmp[10];
+	stateBuffer[9] = tmp[11];
+	stateBuffer[10] = tmp[8];
+	stateBuffer[11] = tmp[9];
+
+	stateBuffer[12] = tmp[13];
+	stateBuffer[13] = tmp[14];
+	stateBuffer[14] = tmp[15];
+	stateBuffer[15] = tmp[12];
 }
 
 
@@ -299,6 +359,34 @@ void MixColumns(){
 	MixColumn(stateBuffer + 12);
 	Transpose(stateBuffer);
 }
+/*
+ * the inverse of mix a single column
+ */
+void MixColumnInv(unsigned char* column){
+	unsigned char t[4] = {0};
+	for(int i = 0; i < 4; i++)
+		t[i] = column[i];
+
+ 	column[0] = FieldMult(t[0], 0x0E) ^ FieldMult(t[1], 0x0B)
+				^ FieldMult(t[2], 0x0D) ^ FieldMult(t[3], 0X09);
+	column[1] = FieldMult(t[1], 0x0E) ^ FieldMult(t[2], 0x0B)
+				^ FieldMult(t[3], 0x0D) ^ FieldMult(t[0], 0X09);
+	column[2] = FieldMult(t[2], 0x0E) ^ FieldMult(t[3], 0x0B)
+				^ FieldMult(t[0], 0x0D) ^ FieldMult(t[1], 0X09);
+	column[3] = FieldMult(t[3], 0x0E) ^ FieldMult(t[0], 0x0B)
+				^ FieldMult(t[1], 0x0D) ^ FieldMult(t[2], 0X09);
+}
+/*
+ * inverse operatio of mix columns
+ */
+void MixColumnsInv(){
+	Transpose(stateBuffer);
+	MixColumnInv(stateBuffer);
+	MixColumnInv(stateBuffer + 4);
+	MixColumnInv(stateBuffer + 8);
+	MixColumnInv(stateBuffer + 12);
+	Transpose(stateBuffer);
+}
 
 
 
@@ -314,10 +402,19 @@ void Encrypt(unsigned char* key, unsigned char* plaintext, unsigned char* cipher
 	KeyExpansion(key);  // generate the key schedule
 
 	while(T < N){
-		for(int i = 0; i < BLOCKSIZE; i++)  // copy the block into buffer
+
+		// copy the block into buffer
+		for(int i = 0; i < BLOCKSIZE; i++)
 			stateBuffer[i] = plaintext[T*BLOCKSIZE + i];
 		Transpose(stateBuffer);
 		
+
+		/*
+		 * four operations: add round key
+		 *					sub bytes
+		 *					shift rows
+		 *					mix columns
+		 */
 		AddRoundKey(keySchedule);
 
 		for(int nr = 1; nr < ROUND; nr++){
@@ -329,24 +426,47 @@ void Encrypt(unsigned char* key, unsigned char* plaintext, unsigned char* cipher
 		AddRoundKey(keySchedule + ROUND*BLOCKSIZE);
 
 
+		// copy the buffer back to the block
 		for(int i = 0; i < BLOCKSIZE; i++)
 			ciphertext[T*BLOCKSIZE + i] = stateBuffer[i];
 		Transpose(ciphertext + T*BLOCKSIZE);
 
+		// index increment
 		T++;
 	}
 }
 /*
- *
+ * used to decrypt the ciphertext
+ * 
+ * first generate the key schedule, then use them in reverse order
+ * all the operations must applied their inverse operations
  */
 void Decrypt(unsigned char* key, unsigned char* ciphertext, unsigned char* plaintext){
 	int T = 0;
 
-	KeyExpansionReverse(key);
+	KeyExpansion(key);  // expand the key, then use them in reverse order,
+						// but not explicitly reverse them
+	while(T < N){  // N is the number of blocks
+		
+		for(int i = 0; i < BLOCKSIZE; i++)
+			stateBuffer[i] = ciphertext[T*BLOCKSIZE + i];
+		Transpose(stateBuffer);
 
-	while(T < N){
+
+		AddRoundKey(keySchedule + ROUND*BLOCKSIZE);
+		ShiftRowsInv(); SubBytesInv();
+
+		for(int nr = ROUND-1; nr > 0; nr--){
+			AddRoundKey(keySchedule + nr*BLOCKSIZE);
+			MixColumnsInv(); ShiftRowsInv(); SubBytesInv();
+		}
+
+		AddRoundKey(keySchedule);
 
 
+		for(int i = 0; i < BLOCKSIZE; i++)
+			plaintext[T*BLOCKSIZE + i] = stateBuffer[i];
+		Transpose(plaintext + T*BLOCKSIZE);
 
 		T++;
 	}
@@ -367,42 +487,4 @@ void debug(unsigned char* s){
 	DisplayBlock(stateBuffer);
 	ShiftRows();
 	DisplayBlock(stateBuffer);
-}
-
-
-int main(){
-	
-	unsigned char key[16] = {
-		0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6,
-		0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C
-	};
-	//debug(key);
-	unsigned char plaintext[BLOCKSIZE * N] = {
-		0x32, 0x43, 0xF6, 0xA8, 0x88, 0x5A, 0x30, 0x8D,
-		0x31, 0x31, 0x98, 0xA2, 0xE0, 0x37, 0x07, 0x34
-	};
-	unsigned char ciphertext[BLOCKSIZE * N] = {0};
-
-	printf("\nThe secret key is:\n");
-	for(int i = 0; i < 16; i++)
-		printf("%02X", key[i]);
-	printf("\n\n");
-
-	printf("\nThe plain-text is:\n");
-	for(int i = 0; i < 16; i++)
-		printf("%02X", plaintext[i]);
-	printf("\n\n");
-
-	Encrypt(key, plaintext, ciphertext);
-	
-	printf("\nThe key schedule is:\n");
-	ShowKeySchedule();
-
-	printf("\nThe cipher-text is:\n");
-	for(int i = 0; i < 16; i++)
-		printf("%02X", ciphertext[i]);
-	printf("\n\n");
-	
-
-	return 0;
 }

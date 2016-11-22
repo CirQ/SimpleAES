@@ -15,17 +15,19 @@ unsigned int ByteToWord(unsigned char*);
 unsigned int SubRotWord(unsigned int);
 void KeyExpansion(unsigned char*);
 
-void KeyExpansionReverse(unsigned char*);
-
 void AddRoundKey(unsigned char*);
 
 void SubBytes();
+void SubBytesInv();
 
 void ShiftRows();
+void ShiftRowsInv();
 
 unsigned char FieldMult(unsigned char, unsigned char);
 void MixColumn(unsigned char*);
 void MixColumns();
+void MixColumnInv(unsigned char*);
+void MixColumnsInv();
 
 void Encrypt(unsigned char*, unsigned char*, unsigned char*);
 void Decrypt(unsigned char*, unsigned char*, unsigned char*);
